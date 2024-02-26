@@ -1,0 +1,19 @@
+
+{% extends 'customer/base.html' %}
+{% block content %}
+{% load static %}
+<div class="w3-bar w3-large w3-black">
+  <div class="w3-bar-item w3-left w3-black"> Merhaba : {{user.username}}</div>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/logout/">Çıkış</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/manage/">Kiralamalarım</a>
+</div>
+
+
+
+<div class="w3-display-container w3-center" style="height:500px;padding:20px;">
+
+<div class="w3-display-middle">
+<a class="w3-btn w3-blue w3-xlarge" href="/customer_portal/search/"><b>IHA Kirala</b></a>
+</div>
+</div>
+{% endblock %}

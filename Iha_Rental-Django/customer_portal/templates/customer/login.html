@@ -1,0 +1,22 @@
+{% extends 'customer/base.html' %}
+
+{% block content %}
+
+{% if form.errors %}
+
+{% endif %}
+<div class="w3-display-container" style="height:500px;">
+  <div class="w3-display-middle">
+<form class="w3-container" action="/customer_portal/auth/" method="POST">{% csrf_token %}
+  <h2 class="w3-center">Müşteri Girişi</h2>
+  <lable> Kullanıcı Adı :</lable> <input class="w3-input" type="text" name="username"><br><br>
+  <lable>Şifre :</lable> <input class="w3-input" type="password" name="password"><br><br>
+  <input class="w3-btn w3-green" type="submit" value="Giriş Yap">
+</form><br><br>
+<div class="w3-container">
+<a class="w3-btn w3-red" href="/customer_portal/register/">Kayıt</a>
+<a class="w3-btn w3-teal" href="/">Ana Sayfa</a>
+</div>
+</div>
+</div>
+{% endblock %}

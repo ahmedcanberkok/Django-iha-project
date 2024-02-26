@@ -1,0 +1,43 @@
+{% extends 'car_dealer/base.html' %}
+{% block content %}
+<div class="w3-bar w3-black w3-large">
+  <div class="w3-bar-item w3-left w3-black"> Dealer Portal: {{user.username}}</div>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/logout/">Çıkış </a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right " href="/car_dealer_portal/auth/">Ana Sayfa</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/order_list/">Kiralamalar</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/manage_vehicles/">Araçlar</a>
+  <div class="w3-bar-item w3-black w3-right" href="/car_dealer_portal/history/">Earnings : ₺{{wallet}}</div>
+</div>
+<h3 class="w3-center" style="padding-top:30"><b>History</b></h3>
+<div style="padding:18">
+<table class="w3-table w3-striped w3-center">
+ 
+  <tr>
+    <th>Name </th>
+    <th>Rent </th>
+    <th>Days </th>
+    <th>Seat</th>
+    <th>
+    </th>
+  </tr>
+  {% for order in order_list %}
+  <tr>
+    <td>{{order.vehicle.iha_name}}</td>
+    <td>${{order.rent}}</td>
+    <td>{{order.days}}</td>
+  
+
+    
+
+
+    <td>
+      <form action = "/dealer_portal/complete/" method="post">
+        {% csrf_token %}
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+{% endblock %}

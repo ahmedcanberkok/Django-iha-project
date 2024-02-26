@@ -1,0 +1,48 @@
+{% extends 'customer/base.html' %}
+{% block content %}
+<div class="w3-bar w3-large w3-black">
+  <div class="w3-bar-item w3-left w3-black">Merhaba: {{user.username}}</div>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/logout/">Çıkış</a>
+  <a class="w3-ber-item w3-btn w3-teal w3-right" href="/customer_portal/search/">Iha Ara</a>
+</div>
+<h3 class="w3-center" style="padding-top:20"><b>Kiralamalar</b></h3>
+<div class="w3-center" style="padding:50px;">
+<table class="w3-table w3-striped w3-center">
+
+
+  <tr>
+    <th>IHA Adı</th>
+    <th>Marka</th>
+    <th>Model</th>
+    <th>Ağırlık</th>
+    <th>Kategori</th>
+    <th>Kiralama Süresi</th>
+  </tr>
+  {% for order in od %}
+  <tr>
+    <td>{{order.vehicle.name}}</td>
+    <td>{{order.vehicle.brand}}</td>
+    <td>{{order.vehicle.model}}</td>
+    <td>{{order.vehicle.weight}} kg</td>
+    <td>{{order.vehicle.category}}</td>
+    <td>{{order.days}} Gün</td>
+    
+    <td>
+      <form action = "/customer_portal/delete/" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="id" value="{{order.id}}">
+      <input class="w3-btn w3-red" type="submit" value="Delete">
+    </form>
+<!--   
+    <form action = "/customer_portal/update/" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="id" value="{{order.id}}">
+      <input class="w3-btn w3-indigo" type="submit" value="Update">
+    </form> -->
+  </td>
+  </tr>
+
+{% endfor %}
+</table>
+</div>
+{% endblock %}
