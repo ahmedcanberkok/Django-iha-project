@@ -80,7 +80,7 @@ def search_results(request):
         request.session['vehicles_list'] = vehicles_list
         return render(request, 'customer/search_results.html')
     else:
-        return HttpResponse("Method Not Allowed", status=405)
+        return HttpResponseBadRequest("Method Not Allowed")
 
 @login_required
 def rent_vehicle(request):
@@ -90,7 +90,7 @@ def rent_vehicle(request):
         cost_per_day = int(vehicle.weight) 
         return render(request, 'customer/confirmation.html', {'vehicle': vehicle, 'cost_per_day': cost_per_day})
     else:
-        return HttpResponse("Method Not Allowed", status=405)
+        return HttpResponseBadRequest("Method Not Allowed")
 
 @login_required
 def confirm(request):
@@ -115,7 +115,7 @@ def confirm(request):
         else:
             return render(request, 'customer/order_failed.html')
     else:
-        return HttpResponse("Method Not Allowed", status=405)
+        return HttpResponseBadRequest("Method Not Allowed")
 
 @login_required
 def manage(request):
@@ -139,7 +139,7 @@ def update_order(request):
         cost_per_day = int(vehicle.weight) 
         return render(request, 'customer/confirmation.html', {'vehicle': vehicle, 'cost_per_day': cost_per_day})
     else:
-        return HttpResponse("Method Not Allowed", status=405)
+        return HttpResponseBadRequest("Method Not Allowed")
 
 @login_required
 def delete_order(request):
@@ -155,4 +155,4 @@ def delete_order(request):
         order.delete()
         return HttpResponseRedirect('/customer_portal/manage/')
     else:
-        return HttpResponse("Method Not Allowed", status=405)
+        return HttpResponseBadRequest("Method Not Allowed")

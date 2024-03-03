@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from dealer_portal.models import *
@@ -19,8 +19,11 @@ def auth_view(request):
     if request.user.is_authenticated:
         return render(request, 'dealer/home_page.html')
     else:
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        if not username or not password:
+            return HttpResponseBadRequest("Kullanıcı adı veya parola eksik.")
+        
         user = authenticate(request, username=username, password=password)
         if user is not None:
             try:
@@ -41,14 +44,17 @@ def register(request):
 
 def registration(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        mobile = request.POST['mobile']
-        firstname = request.POST['firstname']
-        lastname = request.POST['lastname']
-        email = request.POST['email']
-        city = request.POST['city'].lower()
-        postcode = request.POST['postcode']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        mobile = request.POST.get('mobile')
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        email = request.POST.get('email')
+        city = request.POST.get('city').lower()
+        postcode = request.POST.get('postcode')
+
+        if not all([username, password, mobile, firstname, lastname, email, city, postcode]):
+            return HttpResponseBadRequest("Eksik veya hatalı veri.")
 
         try:
             user = User.objects.create_user(username=username, password=password, email=email, first_name=firstname, last_name=lastname)
@@ -70,15 +76,18 @@ def registration(request):
 @login_required
 def add_vehicle(request):
     if request.method == 'POST':
-        iha_name = request.POST['iha_name']
-        brand = request.POST['brand']
-        model = request.POST['model']
-        weight = request.POST['weight']
-        category = request.POST['category']
+        iha_name = request.POST.get('iha_name')
+        brand = request.POST.get('brand')
+        model = request.POST.get('model')
+        weight = request.POST.get('weight')
+        category = request.POST.get('category')
         dealer = Dealer.objects.get(dealer=request.user)
-        city = request.POST['city'].lower()
-        postcode = request.POST['postcode']
-        description = request.POST['description']
+        city = request.POST.get('city').lower()
+        postcode = request.POST.get('postcode')
+        description = request.POST.get('description')
+
+        if not all([iha_name, brand, model, weight, category, city, postcode, description]):
+            return HttpResponseBadRequest("Eksik veya hatalı veri.")
 
         try:
             area = Area.objects.get(city=city, postcode=postcode)
@@ -112,8 +121,15 @@ def order_list(request):
 @login_required
 def complete(request):
     if request.method == 'POST':
-        order_id = request.POST['id']
-        order = Orders.objects.get(id=order_id)
+        order_id = request.POST.get('id')
+        if not order_id:
+            return HttpResponseBadRequest("Sipariş ID'si eksik.")
+        
+        try:
+            order = Orders.objects.get(id=order_id)
+        except Orders.DoesNotExist:
+            return HttpResponseBadRequest("Geçersiz sipariş ID'si.")
+        
         order.is_complete = True
         order.save()
         vehicle = order.vehicle
@@ -130,7 +146,14 @@ def history(request):
 @login_required
 def delete(request):
     if request.method == 'POST':
-        veh_id = request.POST['id']
-        vehicle = Vehicles.objects.get(id=veh_id)
+        veh_id = request.POST.get('id')
+        if not veh_id:
+            return HttpResponseBadRequest("Araç ID'si eksik.")
+        
+        try:
+            vehicle = Vehicles.objects.get(id=veh_id)
+        except Vehicles.DoesNotExist:
+            return HttpResponseBadRequest("Geçersiz araç ID'si.")
+        
         vehicle.delete()
     return HttpResponseRedirect('/dealer_portal/manage_vehicles/')

@@ -31,16 +31,16 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Django'nun varsayılan uygulamaları
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'customer_portal',
-    'dealer_portal',
-    'home',
-
+    # Benim uygulamalarım
+    'portal',
+    'ocrs'
 ]
 
 MIDDLEWARE = [
@@ -86,6 +86,7 @@ DATABASES = {
         'PASSWORD': 'admincanberk',
         'HOST': 'localhost',
         'PORT': '5432',
+        "SCHEMA": "public"
     }
 }
 
