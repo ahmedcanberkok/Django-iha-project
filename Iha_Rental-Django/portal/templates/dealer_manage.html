@@ -8,25 +8,28 @@
   <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/manage_vehicles/">Vehicles</a>
   <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/history/">Earnings</a>
 </div>
-<h3 class="w3-center" style="padding-top:30"><b>Posted Vehicles</b></h3>
+<h3 class="w3-center" style="padding-top:30"><b>Posted Uas</b></h3>
 <div style="padding:18">
 <table class="w3-table w3-striped w3-center">
 
   <tr>
-    <th style="padding:20;">Car </th>
-    <th style="padding:20;">Color </th>
-    <th style="padding:20;">Capacity </th>
-    <th style="padding:20;">Pincode </th>
-    <th style="padding:20;">Address</th>
-    <th style="padding:20;">Action</th>
+    <th style="padding:20;">Brand </th>
+    <th style="padding:20;">Model </th>
+    <th style="padding:20;">Range </th>
+    <th style="padding:20;">Wingspan </th>
+    <th style="padding:20;">Length</th>
+    <th style="padding:20;">Max_speed</th>
+    <th style="padding:20;">Category</th>
   </tr>
-  {% for vehicle in vehicle_list %}
+  {% for uas in uas_list %}
   <tr>
-      <td>{{vehicle.car_name}}</td>
-      <td>{{vehicle.color}}</td>
-      <td>{{vehicle.capacity}} Seats</td>
-      <td>{{vehicle.area.pincode}}</td>
-      <td>{{vehicle.area.city}}</td>
+      <td>{{uas.brand}}</td>
+      <td>{{uas.model}}</td>
+      <td>{{uas.range}} km</td>
+      <td>{{uas.wingspan}} m</td>
+      <td>{{uas.length}} m</td>
+      <td>{{uas.max_speed}} km/h</td>
+      <td>{{uas.category}}</td>
       <td><form action = "/car_dealer_portal/delete/" method="post">
         {% csrf_token %}
         <input type="hidden" name="id" value="{{vehicle.id}}">

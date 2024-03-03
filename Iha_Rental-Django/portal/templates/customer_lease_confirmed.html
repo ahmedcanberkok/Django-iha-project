@@ -1,0 +1,13 @@
+{% extends 'customer/base.html' %}
+{% block content %}
+<div class="w3-container" style="margin-top: 50px;">
+    <div class="w3-card-4 w3-padding">
+        <h2 class="w3-center">Kiralama Başarıyla Tamamlandı!</h2>
+        <p class="w3-center">Kiralama işleminiz başarıyla tamamlandı. Artık İHA'nızı kullanmaya başlayabilirsiniz.</p>
+    </div>
+    <div class="w3-center" style="margin-top: 20px;">
+        <a href="{% url 'customer_lease' %}" class="w3-btn w3-teal">Kiralama Sayfasına Geri Dön</a>
+        <a href="{% url 'customer_home' %}" class="w3-btn w3-teal">Anasayfaya Geri Dön</a>
+    </div>
+</div>
+{% endblock %}

@@ -41,8 +41,8 @@ class Uas(models.Model):
 class Lease(models.Model):
     lease_id = models.AutoField(primary_key=True)  # Kiralama kimliği
     leased_uas = models.ForeignKey(Uas, on_delete=models.CASCADE)  # Kiralanan İHA'ya referans
-    lease_start_date = models.DateTimeField()  # Kiralama başlangıç tarihi
-    lease_end_date = models.DateTimeField()  # Kiralama bitiş tarihi
+    lease_start_date = models.DateTimeField()  # Kiralama başlangıç tarihi ve saati
+    lease_end_date = models.DateTimeField()  # Kiralama bitiş tarihi ve saati
     lease_customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # Kiralayan müşteriye referans
     dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)  # Satıcıya referans
     is_complete = models.BooleanField(default=False)  # Kiralama tamamlandı mı?

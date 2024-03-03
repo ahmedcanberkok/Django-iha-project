@@ -1,0 +1,39 @@
+{% extends 'customer/base.html' %}
+{% block content %}
+<div class="w3-bar w3-large w3-black">
+  <div class="w3-bar-item w3-left w3-black">Merhaba: {{ user.username }}</div>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/logout/">Çıkış</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/search/">Iha Ara</a>
+</div>
+<h3 class="w3-center" style="padding-top:20px;"><b>Kiralamalar</b></h3>
+<div class="w3-center" style="padding:50px;">
+<table class="w3-table w3-striped w3-center">
+  <tr>
+    <th>IHA Adı</th>
+    <th>Marka</th>
+    <th>Model</th>
+    <th>Ağırlık</th>
+    <th>Kategori</th>
+    <th>Kiralama Süresi</th>
+    <th>İşlemler</th>
+  </tr>
+  {% for lease in leases %}
+  <tr>
+    <td>{{ lease.uas.iha_name }}</td>
+    <td>{{ lease.uas.brand }}</td>
+    <td>{{ lease.uas.model }}</td>
+    <td>{{ lease.uas.weight }} kg</td>
+    <td>{{ lease.uas.category }}</td>
+    <td>{{ lease.total_days }} Gün {{ lease.total_hours }} Saat</td>
+    <td>
+      <form action="/customer_portal/delete_lease/" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="lease_id" value="{{ lease.id }}">
+        <input class="w3-btn w3-red" type="submit" value="Kiralama İptal Et">
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endblock %}
