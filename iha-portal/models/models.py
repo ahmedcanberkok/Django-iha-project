@@ -14,7 +14,7 @@ class User(models.Model):
 # Müşteriler için model
 class Customer(models.Model):
     customer_id = models.AutoField(primary_key=True)  # Otomatik artan müşteri kimliği
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)  # Kullanıcıya referans ve silme kuralı (CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Kullanıcıya referans ve silme kuralı (CASCADE)
 
 
     # Diğer özel alanlar buraya eklenebilir
@@ -22,7 +22,7 @@ class Customer(models.Model):
 # Least yapanlar için model
 class Dealer(models.Model):
     dealer_id = models.AutoField(primary_key=True)  # Dealer kimliği otomatik artan
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)  # Kullanıcıya referans ve silme kuralı (CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Kullanıcıya referans ve silme kuralı (CASCADE)
 
     # Diğer özel alanlar buraya eklenebilir
 

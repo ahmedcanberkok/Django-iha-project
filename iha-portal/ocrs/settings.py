@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'BruteBuster',
     # Benim uygulamalarım
-    'Portal',
+    'iha_portal',
+    
+    
 ]
 
 MIDDLEWARE = [

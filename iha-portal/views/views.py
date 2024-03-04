@@ -18,6 +18,7 @@ from django_brutebuster.exceptions import BruteBusterFailureLimitReached
 
 
 def index(request):
+    #Ana sayfa için index.html şablonunu render et
     return render(request, 'index.html')
 
 
@@ -27,8 +28,10 @@ def index(request):
 def customer_index(request):
     # Kullanıcı nesnesinin oturum açık olup olmadığını kontrol et
     if not request.user.is_authenticated:
+        #Oturm açık değilse, kullanıcıyı giriş sayfasına yönlendir
         return render(request, 'customer_login.html')
     else:
+        #Oturum açık ise, kullanıcıyı müşteri ana sayfasına yönlendir
         return render(request, 'customer_home_page.html')
 
 def customer_login(request):
@@ -36,9 +39,11 @@ def customer_login(request):
 
 @login_required
 def customer_auth_view(request):
+    #Eğer kullanıcı oturum açık ise, müşteri ana sayfasına yönlendir
     if request.user.is_authenticated:
         return render(request, 'customer_home_page.html')
     else:
+        #Oturm açık değilse, kullanıcı adı ve parolayı al ve kimlik doğrulama işlemi yap
         username = request.POST.get('username')
         password = request.POST.get('password')
         if not username or not password:
@@ -56,19 +61,26 @@ def customer_auth_view(request):
                 customer = None
 
             if customer is not None:
+                #Kullanıcı doğrulandıysa, oturum aç ve müşteri ana sayfasına yönlendir
                 login(request, user)
                 return render(request, 'customer_home_page.html')
+            #Doğrulama başarısız ise, kullanıcıyı giriş sayfasına yönlendir
         return render(request, 'customer_login_failed.html')
 
 def customer_logout_view(request):
+    #Kullanıcının oturumunu kapat ve giriş sayfasına yönlendir
     logout(request)
     return render(request, 'customer_login.html')
 
 def customer_register(request):
+    ## Müşteri kaydı için kayıt formunu gösteren views fonksiyonu
     return render(request, 'customer_register.html')
 
+
+# Müşteri kaydı için formu işleyen ve müşteri nesnesi oluşturan views fonksiyonu
 def customer_registration(request):
     if request.method == 'POST':
+        #Formdan gelen verileri al
         username = request.POST.get('username')
         password = request.POST.get('password')
         phone = request.POST.get('phone')
@@ -77,30 +89,38 @@ def customer_registration(request):
         email = request.POST.get('email')
         city = request.POST.get('city').lower()
 
+        #Formdan gelen verilerin eksik olup olmadığını kontrol et
         if not all([username, password, phone, firstname, lastname, email, city]):
             return HttpResponseBadRequest("Eksik veya hatalı veri.")
 
         try:
+            #Yeni kullanıcı nesnesi oluştur
             user = User.objects.create_user(username=username, password=password, email=email, first_name=firstname, last_name=lastname)
         except IntegrityError:
             return HttpResponseBadRequest("Bu kullanıcı adı zaten kullanılıyor.Lütfen başka bir kullanıcı adı seçin.")
         except Exception as e:
+            #Herhangi bir hata durumunda, hata mesajını göster.
             return render(request, 'customer_registration_error.html', {'error_message': str(e)})
         
+        #Yeni müşteri nesnesi oluştur.
         customer = Customer.objects.create(user=user, phone=phone, city=city)
         
-        return render(request, 'customer_registered.html')
+        return render(request, 'customer_registered.html') #Başarılı işlem sonrasında customer_registered.html şablonuna yönlendir.
     else:
-        return render(request, 'customer_register.html')
+        return render(request, 'customer_register.html') #Kayıt formunu gösteren sayfaya yönlendir.
 
+
+#Müşterinin İHA arama sayfasını gösteren views fonksiyonu
 @login_required
 def customer_search(request):
     return render(request, 'customer_search.html')
 
+
+#Müşterinin İHA arama sonuçlarını gösteren views fonksiyonu
 @login_required
 def customer_search_result(request):
     if request.method == 'POST':
-
+        #Formdan gelen arama parametrelerini al
         model = request.POST.get('model')
         brand = request.POST.get('brand')
         city = request.POST.get('city')
@@ -110,9 +130,11 @@ def customer_search_result(request):
         max_speed = request.POST.get('max_speed')
        reach = request.POST.get('reach')
 
+        #Eğer hiçbir parametre girilmemişse, tüm İHA'ları getir.
         if not any([model, brand, city, category, length, wingspan, max_speed, reach]):
         uas_list = Uas.objects.filter(is_available=True)
         else:
+            #Boş olmayan parametreleri filtrele
           filter_params = {'is_available': True}
         if model:
                 filter_params['model_icontains'] = model 
@@ -135,9 +157,11 @@ def customer_search_result(request):
         uas_list = Uas.objects.filter(**filter_params)
         return render(request, 'customer_search_result.html', {'uas_list': uas_list})
     else:
+        #POST İsteği yapılmamışsı arama formunu göster.
         return render(request, 'customer_search.html')
 
 
+#Müşterinin İHA kiralama işlemini gerçekleştiren ve kiralama kaydını oluşturan views fonksiyonu
 @login_required
 def customer_leasing(request):
     if request.method == 'POST':
@@ -147,6 +171,7 @@ def customer_leasing(request):
         start_time = request.POST.get('start_time')
         end_date = request.POST.get('end_date')
         end_time = request.POST.get('end_time')
+        #Eksik veri kontrolü yap
         if not all([uas_id, start_date, start_time, end_date, end_time]):
             return HttpResponseBadRequest("Eksik veya hatalı veri.")
         try:
@@ -188,33 +213,44 @@ def customer_leasing(request):
         #Kullanıcıya kiralama bilgilerini göster, Onay sayfasına yönlendir
         return render(request, 'customer_leased.html')
     else:
+        #POST İsteği yapılmamışsa, kiralama başarısız sayfasına yönlendir.
         return render(request, 'customer_leased_failed.html')
 
-    
+    # Müşterinin kiralama işlemini onaylayan ve İHA'yı kullanıcıya atayan views fonksiyonu
 @login_required
 def customer_confirm_lease(request):
     if request.method == 'POST':
+        #Formdan gelen Kiralama ID'sini al.
         lease_id = request.POST.get('lease_id')
+        #Eksik veri kontrolü yap
         if not lease_id:
             return HttpResponseBadRequest("Eksik veya hatalı veri.")
         try:
+            #Kiralama kimliği ile kiralama kaydını getir.
             lease = Lease.objects.get(pk=lease_id)
         except Lease.DoesNotExist:
             return HttpResponseBadRequest("Geçersiz Lease ID'si.")
 
-        #Kiralama bilgilerini göster ve ihanın kullanıcıya atanmasını sağla
+        # Kiralama kaydını müşteriye ata ve kaydet
         lease.lease_customer = request.user.customer
         lease.save()
 
-        return redirect('lease_confirmation')  # Kiralama başarılı sayfasına yönlendir
+        return HttpResponseRedirect('customer_lease_confirmed')  # Kiralama başarılı sayfasına yönlendir
     else:
+                # POST isteği dışında bir istek alındığında, Hatalı İstek yanıtı gönder
         return HttpResponseBadRequest("Method Not Allowed")
 
+## Müşterinin yönettiği tamamlanmamış kiralama kayıtlarını listeleme işlemini gerçekleştiren views fonksiyonu
 @login_required
 def customer_manage_leases(request):
+    #Giriş yapan kullanıcının ilişkili olduğu müşteri nesnesini al
     customer = Customer.objects.get(customer=request.user)
+    #Müşteriye ait tamamlanmamış kiralama kayıtlarını getir.
     leases = Lease.objects.filter(customer=customer, is_complete=False)
+
+    #Kiralama kayıtlarını bir listede topla
     leases_list = [{'id': l.id, 'uas': l.uas, 'start_datetime': l.start_datetime, 'end_datetime': l.end_datetime, 'total_cost': l.total_cost} for l in leases]
+    #Kiralama kayıtlarını gösteren sayfaya yönlendir
     return render(request, 'customer_manage_leases.html', {'leases': leases})
 
 @login_required
@@ -245,7 +281,7 @@ def customer_update_lease(request):
                 return HttpResponseBadRequest("Kiralama süresi zaten sona ermiş.")
             
             #Eğer Lease süresi henüz bitmemişse, uzatma işlemi yapılır
-            #Uztatma işlemi için gerekli verilerin alınması
+            #Uzatma işlemi için gerekli verilerin alınması
             new_end_date = request.POST.get('new_end_date')
             new_end_time = request.POST.get('new_end_time')
 
@@ -295,38 +331,45 @@ def dealer_login(request):
     return render(request, 'dealer_login.html')
 
 def dealer_auth_view(request):
-   if request.user.is_authenticated:
-        return render(request, 'dealer_home_page.html')
-    else:
+   if request.user.is_authenticated: # Eğer kullanıcı zaten oturum açmışsa
+        return render(request, 'dealer_home_page.html') #Dealer ana sayfasına yönlendir
+    else: # Oturum açık değilse
+        #Kullanıcı adı ve parolayı al ve kimlik doğrulama işlemi yap
         username = request.POST.get('username')
         password = request.POST.get('password')
-        if not username or not password:
+        if not username or not password: # Eğer kullanıcı adı veya parola eksikse
             return HttpResponseBadRequest("Kullanıcı adı veya parola eksik.")
         try:      
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(request, username=username, password=password) # Kullanıcıyı kimlik doğrulama işlemine tabi tut
         except BruteBusterFailureLimitReached: # Eğer kullanıcı başarısız giriş denemesi sınırını aştıysa
             return HttpResponseBadRequest("Çok fazla başarısız giriş denemesi. Lütfen 10 saniye bekleyin.")
         
         if user is not None:
             try:
-                dealer = Dealer.objects.get(user=user)
-            except Dealer.DoesNotExist:
+                dealer = Dealer.objects.get(user=user)  # Kullanıcıya ait dealer nesnesini al
+            except Dealer.DoesNotExist: # Eğer dealer nesnesi bulunamazsa
                 dealer = None
 
-            if dealer is not None:
-                login(request, user)
-                return render(request, 'dealer_home_page.html')
-        return render(request, 'dealer_login_failed.html')
+            if dealer is not None: # Eğer dealer nesnesi varsa
+                login(request, user) # Kullanıcıyı oturum açık olarak işaretle
+                return render(request, 'dealer_home_page.html') #Dealer ana sayfasına yönlendir
+        return render(request, 'dealer_login_failed.html') #Doğrulama başarısız ise, kullanıcıyı login_failed sayfasına yönlendir
 
-def dealer_logout_view(request):
-    logout(request)
-    return render(request, 'dealer_login.html')
+def dealer_logout_view(request): # Kullanıcıyı oturumdan çıkaran views fonksiyonu
+    logout(request) # Kullanıcının oturumunu kapat
+    return render(request, 'dealer_login.html') #Giriş sayfasına yönlendir
 
-def dealer_register(request):
-    return render(request, 'dealer_register.html')
+def dealer_register(request): # Dealer kaydı için kayıt formunu gösteren views fonksiyonu
+    return render(request, 'dealer_register.html') #Dealer kayıt formunu gösteren sayfaya yönlendir
 
 def dealer_registration(request):
+       """
+    Dealer kaydı oluşturan view fonksiyonu. Kullanıcı POST isteği gönderdiğinde, formdan gelen verileri kullanarak
+    yeni bir dealer kullanıcı hesabı ve dealer profili oluşturur. Eğer veriler eksik veya hatalı ise uygun bir hata
+    mesajı döndürür. Başarılı bir şekilde kayıt tamamlandığında, kullanıcıyı dealer_registered  sayfasına yönlendirir.
+    """
     if request.method == 'POST':
+        #Formdan gelen verileri al
         username = request.POST.get('username')
         password = request.POST.get('password')
         phone = request.POST.get('phone')
@@ -335,26 +378,31 @@ def dealer_registration(request):
         email = request.POST.get('email')
         city = request.POST.get('city').lower()
 
+        #Formdan gelen verilerin eksik olup olmadığını kontrol et
         if not all([username, password, phone, firstname, lastname, email, city]):
             return HttpResponseBadRequest("Eksik veya hatalı veri.")
 
         try:
+            #Yeni kullanıcı nesnesi oluştur
             user = User.objects.create_user(username=username, password=password, email=email, first_name=firstname, last_name=lastname)
             except IntegrityError:
                 return HttpResponseBadRequest("Bu kullanıcı adı zaten kullanılıyor.Lütfen başka bir kullanıcı adı seçin.")
         except Exception as e:
+            #Diğer istisnai durumlar için hata mesajı döndür.
             return render(request, 'dealer_registration_error.html')
         
+        #Yeni dealer nesnesi oluştur.
         dealer = Dealer.objects.create(user=user, phone=phone, city=city)
         
+        #Başarılı kayıt sonrasında dealer_registered.html sayfasına yönlendir.
         return render(request, 'dealer_registered.html')
     else:
-        return render(request, 'dealer_register.html')
+        return render(request, 'dealer_register.html') #Kayıt formunu gösteren sayfaya yönlendir.
 
-# Diğer dealer view fonksiyonlarını ekleyin...
 @login_required
-def dealer_add_uas(request):
+def dealer_add_uas(request): # İHA ekleme formunu gösteren views fonksiyonu
     if request.method == 'POST':
+        #Formdan gelen verileri al
         brand = request.POST.get('brand')
         model = request.POST.get('model')
         reach = request.POST.get('reach')
@@ -377,13 +425,14 @@ def dealer_add_uas(request):
 @login_required
 #Dealer'ın eklediği İHA'ları listele ve silme işlemi yap
 def dealer_uas_list(request):
-    dealer = request.user.dealer
+
+    dealer = request.user.dealer # Giriş yapan kullanıcının ilişkili olduğu dealer nesnesini al
 
     if request.method == 'POST':
-        uas_id = request.POST.get('id')
+        uas_id = request.POST.get('id') # Silinecek İHA'nın kimliğini al
         try:
             uas = Uas.objects.get(id=uas_id, dealer=dealer)
-            uas.delete()
+            uas.delete() # İHA'yı sil
         except Uas.DoesNotExist:
          # İHA bulunamadı veya kullanıcıya ait değil, hiçbir şey yapma
             pass
@@ -392,9 +441,9 @@ def dealer_uas_list(request):
         return redirect('dealer_uas_list')
 
     else:
-        # Bayiye ait olan tüm İHA'ları al
+        # Dealer'a ait olan tüm İHA'ları al
         uas_list = Uas.objects.filter(dealer=dealer)
-        return render(request, 'dealer_uas_list.html', {'uas_list': uas_list})
+        return render(request, 'dealer_uas_list.html', {'uas_list': uas_list}) # İHA listesini gösteren sayfaya yönlendir
 
 @login_required
 def dealer_lease_list(request):
@@ -407,38 +456,38 @@ def dealer_lease_list(request):
 
 
 @login_required
-def dealer_complete_lease(request):
+def dealer_complete_lease(request): # Kiralama kaydını tamamlama işlemini gerçekleştiren views fonksiyonu
     if request.method == 'POST':
-        order_id = request.POST.get('order_id')
-        if not order_id:
-            return HttpResponseBadRequest("Eksik veya hatalı veri.")
+        order_id = request.POST.get('order_id') # Formdan gelen kiralama kimliğini al
+        if not order_id: # Eğer kiralama kimliği eksikse
+            return HttpResponseBadRequest("Eksik veya hatalı veri.") # Hata mesajı döndür
 
         try:
-            lease = Lease.objects.get(pk=order_id)
-        except Lease.DoesNotExist:
-            return HttpResponseBadRequest("Geçersiz Lease ID'si.")
+            lease = Lease.objects.get(pk=order_id) # Kiralama kimliği ile kiralama kaydını al
+        except Lease.DoesNotExist: # Eğer kiralama kaydı bulunamazsa
+            return HttpResponseBadRequest("Geçersiz Lease ID'si.") # Hata mesajı döndür
 
         # Koşul: Kiralama süresi bitmiş olmalı
-        if lease.is_expired:
-            lease.is_complete = True
-            lease.save()
+        if lease.is_expired: # Eğer kiralama süresi bitmişse
+            lease.is_complete = True # Kiralama kaydını tamamla
+            lease.save() # Kiralama kaydını kaydet
 
             # İlgili İHA'yı tekrar kullanılabilir hale getir
-            uas = lease.uas
-            uas.is_available = True
-            uas.save()
+            uas = lease.uas # Kiralanan İHA'yı al
+            uas.is_available = True # İHA'yı tekrar kullanılabilir hale getir
+            uas.save()  # İHA durumunu kaydet
 
             # Kullanıcısını sipariş listesi sayfasına yönlendir
-            return HttpResponseRedirect('/portal/dealer_order_list')
+            return HttpResponseRedirect('/portal/dealer_lease_list') # Kiralama listesine yönlendir
         else:
-            return HttpResponseBadRequest("Kiralama süresi bitmemiş.")
+            return HttpResponseBadRequest("Kiralama süresi bitmemiş.") # Hata mesajı döndür
 
 @login_required
-def dealer_history(request):
-    dealer = Dealer.objects.get(dealer=request.user)
+def dealer_history(request): # Dealer'a ait tamamlanmış kiralama kayıtlarını listeleme işlemini gerçekleştiren views fonksiyonu
+    dealer = Dealer.objects.get(dealer=request.user) # Giriş yapan kullanıcının ilişkili olduğu dealer nesnesini al
     orders = Orders.objects.filter(dealer=dealer, is_complete=True)  # Sadece tamamlanan siparişleri getir
     total_earnings = orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0  # Toplam kazanç
-    return render(request, 'dealer_account_activities.html', {'wallet': dealer.wallet, 'total_earnings': total_earnings, 'order_list': orders})
+    return render(request, 'dealer_account_activities.html', {'wallet': dealer.wallet, 'total_earnings': total_earnings, 'order_list': orders}) # İlgili şablon dosyasına yönlendir
 
 
 # Yapacağınız güncellemelere göre dealer view fonksiyonlarını ekleyebilirsiniz...

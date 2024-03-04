@@ -18,8 +18,8 @@ from django.urls import path,include
 from portal import views
 
 urlpatterns = [
-    #path('admin/', admin.site.urls),
-    path('portal/',include('portal.urls')),
+    path('admin/', admin.site.urls),
+    path('iha-portal/',include('iha-portal.urls')),
     # path('',include('home.urls')),
     
 ]

@@ -1,5 +1,12 @@
 {% extends 'customer/base.html' %}
 {% block content %}
+
+<div class="w3-bar w3-large w3-black">
+    <div class="w3-bar-item w3-left w3-black"> Merhaba : {{user.username}}</div>
+    <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/logout/">Çıkış</a>
+    <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/manage/">Kiralamalarım</a>
+  </div>
+  
 <div class="w3-container" style="margin-top: 50px;">
     <div class="w3-card-4 w3-padding">
         <h2 class="w3-center">Kiralama Başarıyla Tamamlandı!</h2>
