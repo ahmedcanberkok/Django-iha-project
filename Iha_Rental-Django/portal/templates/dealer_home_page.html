@@ -3,37 +3,25 @@
 {% load static %}
 
 <div class="w3-bar w3-large w3-black">
-  <div class="w3-bar-item w3-left w3-black">Car Dealer Portal: {{user.username}}</div>
+  <a class="w3-bar-item w3-left w3-black" href="{% url 'dealer_home_page' %}">Dealer Portal: {{ dealer.user.username }}</a>
   <a class="w3-bar-item w3-btn w3-teal w3-right" href="/dealer_portal/logout/">Logout</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/dealer_portal/order_list/">Orders</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/dealer_portal/manage_vehicles/">Vehicles</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/dealer_portal/history/">Earnings</a>
 </div>
 
-<div class="w3-display-container" style="height:800px;">
-  <div class="w3-display-left" style="padding-left: 200px;">
-
-<h3 class="w3-container w3-bar w3-black w3-large" style="padding:8px"><center>Post Vehicles<center></h3>
-
-<form class="w3-container" action="/dealer_portal/add_vehicle/" method="post">{% csrf_token %}
-  <lable>IHA Name :</lable> <input class="w3-input" type="text" name="iha_name"><br><br>
-  <lable>Category :</lable> <input class="w3-input" type="text" name="category"><br><br>
-  <lable>Country :</lable> <input class="w3-input" type="text" name="country"><br><br>
-  <lable>Brand :</lable> <input class="w3-input" type="text" name="brand"><br><br>
-  <lable>Model :</lable> <input class="w3-input" type="text" name="model"><br><br>
-  <lable>Year :</lable> <input class="w3-input" type="text" name="year"><br><br>
-  <lable>Price :</lable> <input class="w3-input" type="text" name="price"><br><br>
-
-  <lable>City :</lable> <input class="w3-input" type="text" name="city"><br><br>
-  <lable>Postcode :</lable> <input class="w3-input" type="text" name="postcode"><br><br>
-
-
-  <input class="w3-btn w3-green" type="submit" value="Add Vehicle"><br><br>
-<form>
-</div>
-
-<div class = "w3-display-right">
-  <img src="{% static "images/car.jpg" %}" width="750px">
+<div class="w3-container">
+  <h2>Dealer Home Page</h2>
+  <div class="w3-row">
+    <div class="w3-col s6">
+      <a href="{% url 'add_uas_page' %}" class="w3-btn w3-green w3-block">Add UAS</a>
+    </div>
+    <div class="w3-col s6">
+      <a href="{% url 'lease_history_page' %}" class="w3-btn w3-blue w3-block">Lease History</a>
+    </div>
+  </div>
+  <div class="w3-row" style="margin-top: 20px;">
+    <div class="w3-col s6">
+      <a href="{% url 'uas_list_page' %}" class="w3-btn w3-orange w3-block">UAS List</a>
+    </div>
+  </div>
 </div>
 
 {% endblock %}

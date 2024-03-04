@@ -1,11 +1,31 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.contrib.auth.models import User
+from django.contrib.auth import Q
 from .models import Customer, Dealer, Uas, Lease
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from django.db.utils import IntegrityError
+from django.urls import reverse
+from django.db.models import Sum
+from datetime import datetime
+from django.utils import timezone
+from django.contrib.auth.models import User
+from django.contrib.auth import Q
+from .models import Customer, Dealer, Uas, Lease
+from django_brutebuster.exceptions import BruteBusterFailureLimitReached
+
+
+def index(request):
+    return render(request, 'index.html')
+
+
 
 # Customer views
 
 def customer_index(request):
+    # Kullanıcı nesnesinin oturum açık olup olmadığını kontrol et
     if not request.user.is_authenticated:
         return render(request, 'customer_login.html')
     else:
@@ -14,6 +34,7 @@ def customer_index(request):
 def customer_login(request):
     return render(request, 'customer_login.html')
 
+@login_required
 def customer_auth_view(request):
     if request.user.is_authenticated:
         return render(request, 'customer_home_page.html')
@@ -22,8 +43,12 @@ def customer_auth_view(request):
         password = request.POST.get('password')
         if not username or not password:
             return HttpResponseBadRequest("Kullanıcı adı veya parola eksik.")
+
+        try:
+            user = authenticate(request, username=username, password=password)
+        except BruteBusterFailureLimitReached: # Eğer kullanıcı başarısız giriş denemesi sınırını aştıysa
+            return HttpResponseBadRequest("Çok fazla başarısız giriş denemesi. Lütfen 10 saniye bekleyin.")
         
-        user = authenticate(request, username=username, password=password)
         if user is not None:
             try:
                 customer = Customer.objects.get(user=user)
@@ -57,8 +82,10 @@ def customer_registration(request):
 
         try:
             user = User.objects.create_user(username=username, password=password, email=email, first_name=firstname, last_name=lastname)
-        except:
-            return render(request, 'customer_registration_error.html')
+        except IntegrityError:
+            return HttpResponseBadRequest("Bu kullanıcı adı zaten kullanılıyor.Lütfen başka bir kullanıcı adı seçin.")
+        except Exception as e:
+            return render(request, 'customer_registration_error.html', {'error_message': str(e)})
         
         customer = Customer.objects.create(user=user, phone=phone, city=city)
         
@@ -81,31 +108,31 @@ def customer_search_result(request):
         length = request.POST.get('length')
         wingspan = request.POST.get('wingspan')
         max_speed = request.POST.get('max_speed')
-       range = request.POST.get('range')
+       reach = request.POST.get('reach')
 
-        if not any([model, brand, city, category, length, wingspan, max_speed, range]):
+        if not any([model, brand, city, category, length, wingspan, max_speed, reach]):
         uas_list = Uas.objects.filter(is_available=True)
         else:
           filter_params = {'is_available': True}
-            if model:
+        if model:
                 filter_params['model_icontains'] = model 
-            if brand:
+        if brand:
                 filter_params['brand_icontains'] = brand 
-            if city:
-                filter_params['city_icontains'] = city
-            if category:
-                filter_params['category_icontains'] = category
-            if length:
-                filter_params['length_icontains'] = length
-            if wingspan:
-                filter_params['wingspan_icontains'] = wingspan
-            if max_speed:
-                filter_params['max_speed_icontains'] = max_speed
-            if range:
-                filter_params['range_icontains'] = range
+        if city:
+            filter_params['city_icontains'] = city
+        if category:
+            filter_params['category_icontains'] = category
+        if length:
+            filter_params['length_icontains'] = length
+        if wingspan:
+            filter_params['wingspan_icontains'] = wingspan
+        if max_speed:
+            filter_params['max_speed_icontains'] = max_speed
+        if reach:
+            filter_params['reach_icontains'] = reach
 
                #Filteleri Uygula 
-            uas_list = Uas.objects.filter(**filter_params)
+        uas_list = Uas.objects.filter(**filter_params)
         return render(request, 'customer_search_result.html', {'uas_list': uas_list})
     else:
         return render(request, 'customer_search.html')
@@ -202,7 +229,7 @@ def customer_update_lease(request):
         except Lease.DoesNotExist:
             return HttpResponseBadRequest("Geçersiz Lease ID'si.")
 
-  if action == 'complete':  # Eğer kullanıcı kiralama kaydını tamamlamak istiyorsa
+    if action == 'complete':  # Eğer kullanıcı kiralama kaydını tamamlamak istiyorsa
             #Kiralama kaydının tamamlanması
             lease.is_complete = True
             lease.save()
@@ -212,7 +239,7 @@ def customer_update_lease(request):
             return HttpResponseRedirect('customer_manage_leases') #Kiralama kayıtlarını gösteren sayfaya yönlendir
            
 
-        elif action == 'extend': # Kullanıcı kiralama süresini uzatmak istiyorsa
+    elif action == 'extend': # Kullanıcı kiralama süresini uzatmak istiyorsa
            #Eğer Lease süresi zaten sona ermişse, uzatma işlemi yapılamaz
             if lease.end_datetime <= timezone.now():
                 return HttpResponseBadRequest("Kiralama süresi zaten sona ermiş.")
@@ -240,10 +267,10 @@ def customer_update_lease(request):
       
        if action == 'delete':  # Eğer kullanıcı kiralama kaydını silmek istiyorsa
     # Dealer'ın kazancını güncelleme
-    dealer = lease.uas.dealer
-    dealer.wallet -= lease.total_cost
-    dealer.save()
-    
+            dealer = lease.uas.dealer
+            dealer.wallet -= lease.total_cost
+            dealer.save()
+
     # Kiralama kaydının silinmesi
     lease.delete()
     return HttpResponseRedirect('customer_manage_leases')
@@ -254,11 +281,6 @@ else:
     return HttpResponseBadRequest("Method Not Allowed")
 
 # Yapacağınız güncellemelere göre customer view fonksiyonlarını ekleyebilirsiniz...
-
-
-
-
-
 
 
 # Dealer views
@@ -273,15 +295,18 @@ def dealer_login(request):
     return render(request, 'dealer_login.html')
 
 def dealer_auth_view(request):
-    if request.user.is_authenticated:
+   if request.user.is_authenticated:
         return render(request, 'dealer_home_page.html')
     else:
         username = request.POST.get('username')
         password = request.POST.get('password')
         if not username or not password:
             return HttpResponseBadRequest("Kullanıcı adı veya parola eksik.")
+        try:      
+            user = authenticate(request, username=username, password=password)
+        except BruteBusterFailureLimitReached: # Eğer kullanıcı başarısız giriş denemesi sınırını aştıysa
+            return HttpResponseBadRequest("Çok fazla başarısız giriş denemesi. Lütfen 10 saniye bekleyin.")
         
-        user = authenticate(request, username=username, password=password)
         if user is not None:
             try:
                 dealer = Dealer.objects.get(user=user)
@@ -315,7 +340,9 @@ def dealer_registration(request):
 
         try:
             user = User.objects.create_user(username=username, password=password, email=email, first_name=firstname, last_name=lastname)
-        except:
+            except IntegrityError:
+                return HttpResponseBadRequest("Bu kullanıcı adı zaten kullanılıyor.Lütfen başka bir kullanıcı adı seçin.")
+        except Exception as e:
             return render(request, 'dealer_registration_error.html')
         
         dealer = Dealer.objects.create(user=user, phone=phone, city=city)
@@ -330,67 +357,88 @@ def dealer_add_uas(request):
     if request.method == 'POST':
         brand = request.POST.get('brand')
         model = request.POST.get('model')
-        range = request.POST.get('range')
+        reach = request.POST.get('reach')
         wingspan = request.POST.get('wingspan')
         length = request.POST.get('length')
         max_speed = request.POST.get('max_speed')
         category = request.POST.get('category')
-        if not all([brand, model, range, wingspan, length, max_speed, category]):
+        #Gerekli tüm alanlar doldurulmuş mu kontrol et.
+        if not all([brand, model, reach, wingspan, length, max_speed, category]):
+           #Eğer eksik alan varsa, hata mesajı göster
             return HttpResponseBadRequest("Eksik veya hatalı veri.")
-        uas = Uas.objects.create(brand=brand, model=model, range=range, wingspan=wingspan, length=length, max_speed=max_speed, category=category, dealer=request.user.dealer)
-        return render(request, 'dealer_uas_added.html')
+        
+        #Uas nesnesini oluştur ve veritabanına kaydet.
+        uas = Uas.objects.create(brand=brand, model=model, reach=reach, wingspan=wingspan, length=length, max_speed=max_speed, category=category, dealer=request.user.dealer)
+        #Başarılı işlem sonrasında dealer_uas_added.html şablonuna yönlendir
+        return HttpResponseRedirect(reverse('dealer_uas_added'))  # dealer_uas_added.html şablonuna yönlendir
     else:
-        return render(request, 'dealer_home_page.html')
+        return render(request, 'dealer_add_uas_page.html')
 
 @login_required
-def dealer_manage_uas(request):
-    dealer = Dealer.objects.get(dealer=request.user)
-    uas_list = Uas.objects.filter(dealer=request.user.dealer)
-    return render(request, 'dealer_manage.html', {'uas_list': uas_list})
+#Dealer'ın eklediği İHA'ları listele ve silme işlemi yap
+def dealer_uas_list(request):
+    dealer = request.user.dealer
 
-@login_required
-def dealer_order_list(request):
-    dealer = Dealer.objects.get(dealer=request.user)
-    order_list = Lease.objects.filter(dealer=request.user.dealer,is_complete=False)
-    return render(request, 'dealer_order_list.html', {'order_list': order_list})
-
-@login_required
-def dealer_complete_order(request:)
-if request.method == 'POST':
-    order_id = request.POST.get('order_id')
-    if not order_id:
-        return HttpResponseBadRequest("Eksik veya hatalı veri.")
+    if request.method == 'POST':
+        uas_id = request.POST.get('id')
         try:
-            order = Lease.objects.get(pk=order_id)
-            except Lease.DoesNotExist:
-                return HttpResponseBadRequest("Geçersiz Lease ID'si.")
+            uas = Uas.objects.get(id=uas_id, dealer=dealer)
+            uas.delete()
+        except Uas.DoesNotExist:
+         # İHA bulunamadı veya kullanıcıya ait değil, hiçbir şey yapma
+            pass
+        
+        # İşlem tamamlandıktan sonra aynı sayfaya geri yönlendir
+        return redirect('dealer_uas_list')
 
+    else:
+        # Bayiye ait olan tüm İHA'ları al
+        uas_list = Uas.objects.filter(dealer=dealer)
+        return render(request, 'dealer_uas_list.html', {'uas_list': uas_list})
+
+@login_required
+def dealer_lease_list(request):
+    #Giriş yapan kullanıcının ilişkili olduğu bayi nesnesini al.
+    dealer = Dealer.objects.get(dealer=request.user)
+    #Tamamlanmamış kiralama kayıtlarını filtrele
+    lease_list = Lease.objects.filter(dealer=request.user.dealer,is_complete=False)
+    #Şablon dosyasına kiralama kayıtlarını gönder.
+    return render(request, 'dealer_lease_list.html', {'lease_list': lease_list})
+
+
+@login_required
+def dealer_complete_lease(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        if not order_id:
+            return HttpResponseBadRequest("Eksik veya hatalı veri.")
+
+        try:
+            lease = Lease.objects.get(pk=order_id)
+        except Lease.DoesNotExist:
+            return HttpResponseBadRequest("Geçersiz Lease ID'si.")
+
+        # Koşul: Kiralama süresi bitmiş olmalı
+        if lease.is_expired:
             lease.is_complete = True
             lease.save()
-            uas=lease.uas
+
+            # İlgili İHA'yı tekrar kullanılabilir hale getir
+            uas = lease.uas
             uas.is_available = True
             uas.save()
+
+            # Kullanıcısını sipariş listesi sayfasına yönlendir
             return HttpResponseRedirect('/portal/dealer_order_list')
+        else:
+            return HttpResponseBadRequest("Kiralama süresi bitmemiş.")
 
-
-    @login_required
+@login_required
 def dealer_history(request):
     dealer = Dealer.objects.get(dealer=request.user)
-    orders = Lease.objects.filter(dealer=dealer)
-    return render(request, 'dealer_history.html', {'orders': orders})
+    orders = Orders.objects.filter(dealer=dealer, is_complete=True)  # Sadece tamamlanan siparişleri getir
+    total_earnings = orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0  # Toplam kazanç
+    return render(request, 'dealer_account_activities.html', {'wallet': dealer.wallet, 'total_earnings': total_earnings, 'order_list': orders})
 
 
-
-
-
-
-
-
-
-
-# Ortak views
-
-# İşte bu kısımda ortak olan view fonksiyonları bulunabilir
-# Örneğin, arama, kiralama, sipariş listesi gibi işlemler bu bölümde yer alabilir.
-
-# Diğer ortak view fonksiyonlarını ekleyin...
+# Yapacağınız güncellemelere göre dealer view fonksiyonlarını ekleyebilirsiniz...

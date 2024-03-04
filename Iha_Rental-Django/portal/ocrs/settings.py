@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'BruteBuster',
     # Benim uygulamalarım
-    'portal',
-    'ocrs'
+    'Portal',
 ]
 
 MIDDLEWARE = [
@@ -51,7 +51,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Brutebuster.middleware.BruteBusterMiddleware',
+    'BruteBuster.middleware.RequestMiddleware',
+    'portal.middleware.CustomBruteBusterMiddleware',
 ]
+
+# Django-Brutebuster ayarları
+BRUTE_BUSTER_CONFIG = {
+    'FAILURE_LIMIT': 3,  # Başarısız giriş denemesi sınırı
+    'COOL_OFF_TIME': 10,  # Engellenme süresi (saniye cinsinden)
+}
 
 ROOT_URLCONF = 'ocrs.urls'
 

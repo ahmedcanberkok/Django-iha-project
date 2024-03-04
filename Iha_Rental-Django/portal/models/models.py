@@ -1,11 +1,11 @@
 from django.db import models
 
 # Kullanıcılar için model
-class Users(models.Model):
+class User(models.Model):
     user_id = models.AutoField(primary_key=True)  # Otomatik artan kullanıcı kimliği
     firstname = models.CharField(max_length=100)  # Kullanıcının adı
     lastname = models.CharField(max_length=100)  # Kullanıcının soyadı
-    username = models.CharField(max_length=100)  # Kullanıcı adı
+    username = models.CharField(max_length=100,unique=True)  # Kullanıcı adı
     password = models.CharField(max_length=100)  # Kullanıcı şifresi
     email = models.EmailField(max_length=254)  # Kullanıcının e-posta adresi
     phone = models.CharField(max_length=13)  # Kullanıcının telefon numarası
@@ -31,7 +31,7 @@ class Uas(models.Model):
     uas_id = models.AutoField(primary_key=True)  # İHA kimliği otomatik artan
     brand = models.CharField(max_length=100)  # İHA markası
     model = models.CharField(max_length=100)  # İHA modeli
-    range = models.CharField(max_length=100)  # İHA menzili
+    reach = models.CharField(max_length=100)  # İHA menzili
     wingspan = models.CharField(max_length=100)  # İHA kanat açıklığı
     length = models.CharField(max_length=100)  # İHA uzunluğu
     max_speed = models.CharField(max_length=100)  # İHA maksimum hızı

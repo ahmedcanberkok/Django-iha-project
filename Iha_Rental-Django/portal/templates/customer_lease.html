@@ -1,21 +1,32 @@
 {% extends 'customer/base.html' %}
 {% block content %}
 
-<div class="w3-bar w3-large w3-black">
-  <div class="w3-bar-item w3-left w3-black"> Merhaba: {{user.username}}</div>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/logout/">Çıkış</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/customer_portal/manage/">Kiralamalarım</a>
-  <a class="w3-ber-item w3-btn w3-teal w3-right" href="/customer_portal/search/">Iha ara</a>
+<div class="container">
+  <h2>IHA Kiralama Formu</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="uas_id">İHA ID:</label>
+      <input type="text" class="form-control" id="uas_id" name="uas_id" placeholder="İHA ID'si girin" required>
+    </div>
+    <div class="form-group">
+      <label for="start_date">Başlangıç Tarihi:</label>
+      <input type="date" class="form-control" id="start_date" name="start_date" required>
+    </div>
+    <div class="form-group">
+      <label for="start_time">Başlangıç Saati:</label>
+      <input type="time" class="form-control" id="start_time" name="start_time" required>
+    </div>
+    <div class="form-group">
+      <label for="end_date">Bitiş Tarihi:</label>
+      <input type="date" class="form-control" id="end_date" name="end_date" required>
+    </div>
+    <div class="form-group">
+      <label for="end_time">Bitiş Saati:</label>
+      <input type="time" class="form-control" id="end_time" name="end_time" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Kiralama Yap</button>
+  </form>
 </div>
-<div class="w3-containet w3-center" style="padding:100px  ">
-<b> IHA : {{vehicle.car_name}}</b>
-<form class="w3-container" action="/customer_portal/confirmed/" method="post">
-  {% csrf_token %}
-  <b>Ücret : ₺{{cost_per_day}} günlük ücret</b><br><br>
-  <lable>Kaç gün kiralayacaksınız?</lable> <input type="text" placeholder="2" name="days"><br><br>
-  <input class="w3-btn w3-teal" type="submit"  value="Kiralamayı tamamla"><br><br>
-  <input type="hidden" value="{{vehicle.id}}" name="id">
-  <br><br>
-</from>
-</div>
+
 {% endblock %}

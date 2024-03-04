@@ -1,19 +1,38 @@
-{% extends 'dealer_base.html' %}
+{% extends 'dealer/base.html' %}
 {% block content %}
-{% csrf_token %}
-<div class="w3-bar w3-black w3-large">
-  <div class="w3-bar-item w3-left w3-black"> Dealer Portal: {{user.username}}</div>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/logout/">Logout</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right " href="/car_dealer_portal/auth/">Home</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/order_list/">Orders</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/manage_vehicles/">Uas</a>
-  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/car_dealer_portal/history/">Earnings</a>
+{% load static %}
+
+<div class="w3-bar w3-large w3-black">
+  <div class="w3-bar-item w3-left w3-black"> Dealer Portal: {{dealer.user.username}}</div>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/portal/logout/">Logout</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/portal/homepage/">Home</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/_portal/order_list/">Lease</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/dealer_portal/manage_vehicles/">Vehicles</a>
+  <a class="w3-bar-item w3-btn w3-teal w3-right" href="/dealer_portal/history/">Earnings</a>
 </div>
 
-<div class="w3-display-container" style="height:300px;">
-  <div class="w3-display-middle">
-    Uas Details Added! <br><br>
-    <a href="/car_dealer_portal/index/">Back To Home Page</a>
+<div class="w3-display-container" style="height:800px;">
+  <div class="w3-display-left" style="padding-left: 200px;">
+
+<h3 class="w3-container w3-bar w3-black w3-large" style="padding:8px"><center>Post UAS</center></h3>
+
+<form class="w3-container" action="{% url 'dealer_add_uas' %}" method="post">{% csrf_token %}
+  <label>Brand:</label> <input class="w3-input" type="text" name="brand"><br><br>
+  <label>Model:</label> <input class="w3-input" type="text" name="model"><br><br>
+  <label>Range:</label> <input class="w3-input" type="text" name="range"><br><br>
+  <label>Wingspan:</label> <input class="w3-input" type="text" name="wingspan"><br><br>
+  <label>Length:</label> <input class="w3-input" type="text" name="length"><br><br>
+  <label>Max Speed:</label> <input class="w3-input" type="text" name="max_speed"><br><br>
+  <label>Category:</label> <input class="w3-input" type="text" name="category"><br><br>
+
+  <input class="w3-btn w3-green" type="submit" value="Add UAS"><br><br>
+</form>
+
+
 </div>
+
+<div class = "w3-display-right">
+  <img src="{% static "images/uas.jpg" %}" width="750px">
 </div>
+
 {% endblock %}
